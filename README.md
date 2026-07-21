@@ -508,6 +508,22 @@ This allows Redis-compatible clients to connect through HTTP-only infrastructure
 
 ---
 
+# Security & Authentication
+
+The WebSocket Gateway is protected by two security mechanisms configured via environment variables:
+
+1. **API Key Authentication**: The client must provide an `x-rendis-key` header that matches the `KEY` environment variable on the server.
+2. **Origin Verification**: The server checks the `Origin` header against a comma-separated list of allowed origins defined in the `ALLOWED_ORIGINS` environment variable. You can use `*` to allow any origin.
+
+**Example `.env` configuration:**
+
+```env
+KEY=my-secure-rendis-key
+ALLOWED_ORIGINS=https://my-app.com,localhost
+```
+
+---
+
 # Handling Cloud Restarts
 
 Cloud platforms may restart services.
@@ -557,6 +573,7 @@ Accept client connections
 * [x] EXPIRE support
 * [x] Active expiration worker
 * [x] TCP-over-WebSocket gateway
+* [x] Gateway authentication & origin verification
 
 ---
 
