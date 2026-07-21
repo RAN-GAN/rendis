@@ -1,0 +1,43 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output directories
+/bin/
+/build/
+/dist/
+
+# Go coverage files
+coverage.out
+*.coverprofile
+
+# Go workspace files
+go.work
+
+# Dependency/vendor (uncomment if you don't commit vendor)
+/vendor/
+
+# Environment files
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
