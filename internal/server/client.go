@@ -2,7 +2,6 @@ package server
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 
 	"github.com/RAN-GAN/rendis/internal/protocol"
@@ -12,14 +11,12 @@ import (
 func handleClient(conn net.Conn, db *store.Store) {
 	defer conn.Close()
 
-	fmt.Println("Client Connected:", conn.RemoteAddr())
-
 	reader := bufio.NewReader(conn)
 
 	for {
 		parts, err := protocol.ReadRESP(reader)
 		if err != nil {
-			fmt.Println("Client disconnected:", conn.RemoteAddr())
+
 			return
 		}
 
