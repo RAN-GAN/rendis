@@ -27,6 +27,8 @@ go.work
 .env
 .env.*
 
+/docs/
+
 # IDE files
 .vscode/
 .idea/

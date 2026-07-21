@@ -14,8 +14,9 @@ import (
 )
 
 var upgrader = websocket.Upgrader{
+
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		return VerifyOrigin(r)
 	},
 }
 
@@ -34,6 +35,11 @@ func translateTextToRESP(text string) []byte {
 }
 
 func handleConnection(w http.ResponseWriter, r *http.Request, backend string) {
+	ok := Authorize(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return

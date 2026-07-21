@@ -185,7 +185,7 @@ rendis/
 Example:
 
 ```
-SET name Pradeep
+SET name RAN-GAN
 ```
 
 Flow:
@@ -239,7 +239,7 @@ Rendis implements Redis Serialization Protocol.
 Example command:
 
 ```
-SET name Pradeep
+SET name RAN-GAN
 ```
 
 RESP representation:
@@ -251,7 +251,7 @@ SET\r\n
 $4\r\n
 name\r\n
 $7\r\n
-Pradeep\r\n
+RAN-GAN\r\n
 ```
 
 The server parses the incoming bytes and returns RESP-compatible responses.
@@ -271,7 +271,7 @@ Example:
 ```
 {
     "name": {
-        Value: "Pradeep",
+        Value: "RAN-GAN",
         Expiry: 12:30:00
     }
 }
@@ -317,7 +317,7 @@ Store a value.
 Request:
 
 ```
-SET name Pradeep
+SET name RAN-GAN
 ```
 
 Response:
@@ -341,7 +341,7 @@ GET name
 Response:
 
 ```
-Pradeep
+RAN-GAN
 ```
 
 ---
@@ -457,11 +457,11 @@ redis-cli -p 1708
 Example:
 
 ```
-127.0.0.1:1708> SET name Pradeep
+127.0.0.1:1708> SET name RAN-GAN
 OK
 
 127.0.0.1:1708> GET name
-"Pradeep"
+"RAN-GAN"
 
 127.0.0.1:1708> EXPIRE name 10
 (integer) 1
@@ -556,13 +556,12 @@ Accept client connections
 * [x] TTL support
 * [x] EXPIRE support
 * [x] Active expiration worker
+* [x] TCP-over-WebSocket gateway
 
 ---
 
 ## Upcoming
 
-* [ ] TCP-over-WebSocket gateway
-* [ ] Local tunnel client
 * [ ] Persistence layer
 * [ ] RDB snapshots
 * [ ] AOF logging
