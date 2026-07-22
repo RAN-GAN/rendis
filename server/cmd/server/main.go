@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/RAN-GAN/rendis/internal/gateway"
-	"github.com/RAN-GAN/rendis/internal/server"
-	"github.com/RAN-GAN/rendis/internal/store"
+	"github.com/RAN-GAN/rendis/server/internal/gateway"
+	"github.com/RAN-GAN/rendis/server/internal/server"
+	"github.com/RAN-GAN/rendis/server/internal/store"
 
 	"github.com/joho/godotenv"
 )
@@ -27,7 +27,7 @@ func main() {
 
 	port := os.Getenv("GATEWAY_PORT")
 	if port == "" {
-		port = os.Getenv("PORT") 
+		port = os.Getenv("PORT")
 	}
 	if port == "" {
 		port = "8080"

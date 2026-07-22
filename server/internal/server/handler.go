@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RAN-GAN/rendis/internal/protocol"
-	"github.com/RAN-GAN/rendis/internal/store"
+	"github.com/RAN-GAN/rendis/server/internal/protocol"
+	"github.com/RAN-GAN/rendis/server/internal/store"
 )
 
 func handleMessage(parts []string, db *store.Store) string {

@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"net"
 
-	"github.com/RAN-GAN/rendis/internal/protocol"
-	"github.com/RAN-GAN/rendis/internal/store"
+	"github.com/RAN-GAN/rendis/server/internal/protocol"
+	"github.com/RAN-GAN/rendis/server/internal/store"
 )
 
 func handleClient(conn net.Conn, db *store.Store) {

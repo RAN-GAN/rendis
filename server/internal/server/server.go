@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/RAN-GAN/rendis/internal/store"
+	"github.com/RAN-GAN/rendis/server/internal/store"
 )
 
 func Start(db *store.Store, addr string) {

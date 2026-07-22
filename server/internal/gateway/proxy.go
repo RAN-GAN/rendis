@@ -62,10 +62,9 @@ func handleConnection(w http.ResponseWriter, r *http.Request, backend string) {
 			if err != nil {
 				return
 			}
-
-			respData := translateTextToRESP(string(data))
-			if len(respData) > 0 {
-				_, err = tcp.Write(respData)
+			fmt.Println(data)
+			if len(data) > 0 {
+				_, err = tcp.Write(data)
 				if err != nil {
 					return
 				}
@@ -79,31 +78,22 @@ func handleConnection(w http.ResponseWriter, r *http.Request, backend string) {
 		if err != nil {
 			break
 		}
-		line = strings.TrimSuffix(line, "\r\n")
+		rawMsg := []byte(line)
 
-		if len(line) == 0 {
+		lineStr := strings.TrimSuffix(line, "\r\n")
+		if len(lineStr) == 0 {
 			continue
 		}
 
-		var output string
-		prefix := line[0]
-		content := line[1:]
+		prefix := lineStr[0]
+		content := lineStr[1:]
 
-		switch prefix {
-		case '+':
-			output = content
-		case '-':
-			output = "(error) " + content
-		case ':':
-			output = "(integer) " + content
-		case '$':
+		if prefix == '$' {
 			length, err := strconv.Atoi(content)
 			if err != nil {
 				continue
 			}
-			if length == -1 {
-				output = "(nil)"
-			} else {
+			if length != -1 {
 				buf := make([]byte, length)
 				if _, err := io.ReadFull(reader, buf); err != nil {
 					break
@@ -111,13 +101,12 @@ func handleConnection(w http.ResponseWriter, r *http.Request, backend string) {
 				crlf := make([]byte, 2)
 				io.ReadFull(reader, crlf)
 
-				output = string(buf)
+				rawMsg = append(rawMsg, buf...)
+				rawMsg = append(rawMsg, crlf...)
 			}
-		default:
-			output = "unknown response: " + line
 		}
 
-		err = ws.WriteMessage(websocket.TextMessage, []byte(output))
+		err = ws.WriteMessage(websocket.BinaryMessage, rawMsg)
 		if err != nil {
 			break
 		}

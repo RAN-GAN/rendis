@@ -9,7 +9,7 @@ import (
 func Authorize(r *http.Request) bool {
 	key := os.Getenv("KEY")
 
-	clientKey := r.Header.Get("x-rendis-key")
+	clientKey := r.Header.Get("X-RENDIS-Key")
 	if clientKey == "" {
 		clientKey = r.URL.Query().Get("key")
 	}

@@ -15,7 +15,6 @@ func ReadRESP(reader *bufio.Reader) ([]string, error) {
 	}
 
 	line = strings.TrimSuffix(line, "\r\n")
-
 	countStr, ok := strings.CutPrefix(line, "*")
 	if !ok {
 		return nil, fmt.Errorf("protocol error: expected array")
