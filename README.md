@@ -602,7 +602,7 @@ go run . -url "ws://localhost:8080" -key "test" -c 50 -duration 10s -mode mixed
 ## Rendis Benchmark (Local)
 
 **Hardware**
-* **CPU:** <your CPU>
+* **CPU:** 12th Gen Intel(R) Core(TM) i5-12450H
 * **OS:** Arch Linux
 * **Go Version:** 1.26
 
