@@ -1,6 +1,6 @@
 {
   "name": "@ran-gan/rendis",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official JavaScript client for Rendis",
   "keywords": [
     "rendis",
@@ -14,7 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RAN-GAN/rendis.git"
+    "url": "git+https://github.com/RAN-GAN/rendis.git",
+    "directory": "client/javascript"
   },
   "license": "MIT",
   "author": "RAN-GAN",

@@ -5,7 +5,7 @@ A Go client for Rendis, an in-memory datastore.
 ## Installation
 
 ```bash
-go get github.com/yourusername/rendis/client/golang
+go get github.com/RAN-GAN/rendis/client/golang
 ```
 *(Update the package path to match your actual Go module path when publishing)*
 
@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yourusername/rendis/client/golang"
+	"github.com/RAN-GAN/rendis/client/golang"
 )
 
 func main() {

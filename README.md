@@ -104,17 +104,13 @@ Rendis solves this by adding a TCP tunnel layer.
                     Client Machine
 
 
-                 redis-cli / Redis Client
-
-                         |
-                         |
-                    RESP over TCP
+                    Rendis Client
 
                          |
                          |
 
-                 Local TCP Tunnel
-
+                 TCP-over-WebSocket
+                         
                          |
                          |
                    WebSocket (WSS)
@@ -196,7 +192,7 @@ SET name RAN-GAN
 Flow:
 
 ```
-Redis Client
+Rendis Client
 
         |
         |
@@ -509,7 +505,7 @@ TCP
 Rendis
 ```
 
-This allows Redis-compatible clients to connect through HTTP-only infrastructure.
+This allows Redis-compatible clients to connect through TCP infrastructure when available.
 
 ---
 
