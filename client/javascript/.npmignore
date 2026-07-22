@@ -1,0 +1,4 @@
+# Ignore testing and example files
+test.js
+src/example/
+.gitignore

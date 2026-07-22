@@ -1,0 +1,32 @@
+{
+  "name": "@ran-gan/rendis",
+  "version": "1.0.0",
+  "description": "Official JavaScript client for Rendis",
+  "keywords": [
+    "rendis",
+    "redis",
+    "cache",
+    "websocket"
+  ],
+  "homepage": "https://github.com/RAN-GAN/rendis#readme",
+  "bugs": {
+    "url": "https://github.com/RAN-GAN/rendis/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RAN-GAN/rendis.git"
+  },
+  "license": "MIT",
+  "author": "RAN-GAN",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.1"
+  }
+}
