@@ -149,9 +149,13 @@ Rendis solves this by adding a TCP tunnel layer.
 ```
 rendis/
 
-├── cmd/
-│   └── rendis/
-│       └── main.go
+├── server/
+│   └── main.go
+│
+├── client/
+│   ├── golang/
+│   ├── javascript/
+│   └── python/
 │
 ├── internal/
 │
@@ -159,6 +163,7 @@ rendis/
 │   │   ├── tcp.go
 │   │   ├── client.go
 │   │   └── handler.go
+
 │   │
 │   ├── protocol/
 │   │   ├── reader.go
@@ -429,13 +434,13 @@ Clone:
 ```bash
 git clone https://github.com/RAN-GAN/rendis.git
 
-cd rendis
+cd rendis/server
 ```
 
 Run:
 
 ```bash
-go run .
+go run main.go
 ```
 
 Server:
@@ -510,16 +515,43 @@ This allows Redis-compatible clients to connect through HTTP-only infrastructure
 
 # Security & Authentication
 
-The WebSocket Gateway is protected by two security mechanisms configured via environment variables:
+The WebSocket Gateway is protected by two security mechanisms configured via environment variables. When deploying to a platform like Render, Heroku, or AWS, simply set these as environment variables in your deployment dashboard:
 
 1. **API Key Authentication**: The client must provide an `x-rendis-key` header that matches the `KEY` environment variable on the server.
 2. **Origin Verification**: The server checks the `Origin` header against a comma-separated list of allowed origins defined in the `ALLOWED_ORIGINS` environment variable. You can use `*` to allow any origin.
 
-**Example `.env` configuration:**
+**Example deployment variables (`.env` or dashboard):**
 
 ```env
 KEY=my-secure-rendis-key
 ALLOWED_ORIGINS=https://my-app.com,localhost
+```
+
+---
+
+# Client Libraries (How to use in a project)
+
+Rendis provides official client libraries that handle WebSocket tunneling and authentication automatically, making it easy to use Rendis in your projects.
+
+Check out the individual client documentation for installation and API details:
+
+* [Golang Client](client/golang/README.md)
+* [Python Client](client/python/README.md)
+* [JavaScript Client](client/javascript/README.md)
+
+### Quick Example (Python)
+
+```python
+from rendis import Client
+
+# Initialize with your deployed server URL and your secret key
+client = Client("ws://your-rendis-deployment.onrender.com", "my-secure-rendis-key")
+
+# Use standard Redis commands
+client.set("my_key", "hello world")
+print(client.get("my_key"))
+
+client.close()
 ```
 
 ---
@@ -555,6 +587,50 @@ Start WebSocket Gateway
 
 Accept client connections
 ```
+
+---
+
+# Benchmarks
+
+Rendis includes a custom, highly-concurrent WebSocket benchmark tool written in Go to test performance.
+
+```bash
+cd benchmark
+go run . -url "ws://localhost:8080" -key "test" -c 50 -duration 10s -mode mixed
+```
+
+## Rendis Benchmark (Local)
+
+**Hardware**
+* **CPU:** <your CPU>
+* **OS:** Arch Linux
+* **Go Version:** 1.26
+
+**Benchmark**
+* **Workers:** 50
+* **Duration:** 10s
+
+**Operations**
+* **GET:** 48,211
+* **SET:** 48,092
+* **PING:** 47,713
+
+**Throughput**
+* 14,379 ops/sec
+
+**Latency**
+* **Average:** 3.47 ms
+* **Median:** 2.10 ms
+* **P95:** 11.64 ms
+* **P99:** 17.85 ms
+
+## Real-world Benchmark (Render Free Tier)
+* **Concurrency:** 50 simultaneous WebSocket workers
+* **Operations:** 20,000 (10,000 SETs, 10,000 GETs)
+* **Failures:** 0 (0% error rate)
+* **Throughput:** ~391 ops/sec
+
+This validates the robustness of the `sync.RWMutex` thread safety and the stability of the TCP-to-WebSocket tunnel under sustained concurrent load.
 
 ---
 
