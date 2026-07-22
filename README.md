@@ -624,11 +624,29 @@ go run . -url "ws://localhost:8080" -key "test" -c 50 -duration 10s -mode mixed
 * **P95:** 11.64 ms
 * **P99:** 17.85 ms
 
-## Real-world Benchmark (Render Free Tier)
-* **Concurrency:** 50 simultaneous WebSocket workers
-* **Operations:** 20,000 (10,000 SETs, 10,000 GETs)
+## Cloud-to-Cloud Benchmark (Render Free Tier)
+
+This benchmark was run from a dedicated benchmark service deployed on Render, communicating over WebSockets with the Rendis server deployed in the same region.
+
+**Benchmark**
+* **Workers:** 50
+* **Duration:** 30s
+
+**Operations**
+* **GET:** 16,199
+* **SET:** 16,282
+* **PING:** 16,224
+
+**Throughput**
+* 1,571.59 ops/sec (48,705 total operations)
 * **Failures:** 0 (0% error rate)
-* **Throughput:** ~391 ops/sec
+
+**Latency**
+* **Average:** 30.84 ms
+* **Median:** 6.24 ms
+* **P95:** 90.34 ms
+* **P99:** 94.29 ms
+* **Max:** 305.87 ms
 
 This validates the robustness of the `sync.RWMutex` thread safety and the stability of the TCP-to-WebSocket tunnel under sustained concurrent load.
 
