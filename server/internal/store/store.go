@@ -127,5 +127,3 @@ func (s *Store) clearExpired() {
 		}
 	}
 }
-
-

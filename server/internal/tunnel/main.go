@@ -16,7 +16,7 @@ func main() {
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if listenAddr == "" {
-		listenAddr = "127.0.0.1:6379" 
+		listenAddr = "127.0.0.1:6379"
 	}
 
 	l, err := net.Listen("tcp", listenAddr)
