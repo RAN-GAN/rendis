@@ -7,13 +7,13 @@ A JavaScript/Node.js client for Rendis, an in-memory datastore.
 Install the package via npm:
 
 ```bash
-npm install rendis
+npm install @ran-gan/rendis
 ```
 
 ## Usage
 
 ```javascript
-const { Client } = require('rendis'); 
+const { Client } = require('@ran-gan/rendis'); 
 
 async function run() {
   // Initialize the client connection

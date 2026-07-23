@@ -449,7 +449,46 @@ Server running on port 1708
 
 # Connecting
 
-Using redis-cli:
+You can connect to a Rendis server using either the official `rendis-cli` (recommended) or the standard `redis-cli` (for local TCP testing).
+
+## Using rendis-cli (Recommended)
+
+`rendis-cli` is an interactive, Redis-like command line interface designed specifically for Rendis. It communicates over WebSockets, so it works seamlessly with cloud deployments (like Render) that do not expose raw TCP ports.
+
+### Installation
+
+```bash
+cd client/cli
+go install
+```
+
+### Usage
+
+Connect to a local server:
+```bash
+rendis-cli -h 127.0.0.1 -p 8080 -a "my-secure-key"
+```
+
+Connect to a remote cloud deployment via WebSocket URL:
+```bash
+rendis-cli -u wss://my-rendis-app.onrender.com -a "my-secure-key"
+```
+
+Example interaction:
+```
+wss://my-rendis-app.onrender.com> SET name RAN-GAN
+OK
+wss://my-rendis-app.onrender.com> GET name
+"RAN-GAN"
+wss://my-rendis-app.onrender.com> PING
+"PONG"
+```
+
+---
+
+## Using redis-cli (Local TCP testing only)
+
+If you are running the server locally, you can also use the standard `redis-cli` to connect directly to the internal TCP server (bypassing the WebSocket gateway).
 
 ```bash
 redis-cli -p 1708
@@ -470,6 +509,7 @@ OK
 127.0.0.1:1708> TTL name
 (integer) 9
 ```
+
 
 ---
 

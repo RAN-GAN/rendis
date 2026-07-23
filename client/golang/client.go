@@ -164,3 +164,19 @@ func (c *Client) Exists(key string) (bool, error) {
 
 	return exists == 1, nil
 }
+
+// Do executes a generic command on the Rendis server
+func (c *Client) Do(args ...string) (any, error) {
+	data := encode(args...)
+
+	if err := c.send(data); err != nil {
+		return nil, err
+	}
+
+	resp, err := c.receive()
+	if err != nil {
+		return nil, err
+	}
+
+	return decode(resp)
+}
