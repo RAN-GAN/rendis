@@ -664,13 +664,13 @@ This validates the robustness of the `sync.RWMutex` thread safety and the stabil
 * [x] Active expiration worker
 * [x] TCP-over-WebSocket gateway
 * [x] Gateway authentication & origin verification
+* [x] Persistence layer
+* [x] RDB snapshots
 
 ---
 
 ## Upcoming
 
-* [ ] Persistence layer
-* [ ] RDB snapshots
 * [ ] AOF logging
 * [ ] More Redis commands
 * [ ] Unit tests

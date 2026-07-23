@@ -38,7 +38,7 @@ func main() {
 	}
 
 	db, err := persistence.NewProvider()
-	if err != nil {
+	if err != nil || db == nil {
 		log.Println("Persistence disabled:", err)
 	} else {
 		restorePoint, err := db.Load("rendisSnapshot")
@@ -52,15 +52,15 @@ func main() {
 				fmt.Println("Snapshot restored successfully")
 			}
 		}
+		interval, err := strconv.Atoi(os.Getenv("SNAPSHOT_INTERVAL"))
+		if err != nil {
+			log.Println("Invalid snapshot interval, using default of 300 seconds")
+			interval = 300
+		}
+		go persistence.SnapShotWorker(kv, db, time.Duration(interval)*time.Second)
 
 	}
 
-	interval, err := strconv.Atoi(os.Getenv("SNAPSHOT_INTERVAL"))
-	if err != nil {
-		log.Println("Invalid snapshot interval, using default of 300 seconds")
-		interval = 300
-	}
-	go persistence.SnapShotWorker(kv, db, time.Duration(interval)*time.Second)
 	gateway.Start(gateway.Config{
 		ListenAddr:  ":" + port,
 		BackendAddr: backend,

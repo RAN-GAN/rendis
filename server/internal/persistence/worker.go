@@ -24,4 +24,3 @@ func SnapShotWorker(db *store.Store, p Provider, interval time.Duration) {
 		}
 	}
 }
-

@@ -13,7 +13,11 @@ type Provider interface {
 }
 
 func NewProvider() (Provider, error) {
-	switch os.Getenv("SNAPSHOT_PROVIDER") {
+	provider := os.Getenv("SNAPSHOT_PROVIDER")
+	if provider == "" {
+		return nil, errors.New("No Persistance provided")
+	}
+	switch provider {
 	case "S3":
 		cfg := S3Config{
 			Endpoint:  os.Getenv("S3_ENDPOINT"),
