@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -14,7 +15,11 @@ func runBenchmark(cfg Config) *Stats {
 
 	for i := 0; i < cfg.Concurrency; i++ {
 		wg.Add(1)
-		go runWorker(cfg, stats, &wg)
+		if strings.HasPrefix(cfg.URL, "tcp://") {
+			go runTCPWorker(cfg, stats, &wg)
+		} else {
+			go runWorker(cfg, stats, &wg)
+		}
 	}
 
 	wg.Wait()

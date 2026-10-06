@@ -47,3 +47,4 @@ Thumbs.db
 rendis.egg-info/
 /client/python/dist/*
 
+/brag-output/*

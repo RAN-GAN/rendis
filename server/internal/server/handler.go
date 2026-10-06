@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -10,8 +9,6 @@ import (
 )
 
 func handleMessage(parts []string, db *store.Store) string {
-	fmt.Println("handling Message: ", parts)
-
 	if len(parts) == 0 {
 		return protocol.Error("empty command")
 	}
@@ -43,6 +40,15 @@ func handleMessage(parts []string, db *store.Store) string {
 		}
 		return protocol.BulkString(value)
 
+	case "GETSET":
+		if len(parts) != 3 {
+			return protocol.Error("wrong number of arguments")
+		}
+		value, ok := db.GetSet(parts[1], parts[2])
+		if !ok {
+			return protocol.NullBulkString()
+		}
+		return protocol.BulkString(value)
 	case "DEL":
 		if len(parts) != 2 {
 			return protocol.Error("wrong number of arguments")
@@ -86,6 +92,102 @@ func handleMessage(parts []string, db *store.Store) string {
 			return protocol.Integer(1)
 		}
 		return protocol.Integer(0)
+
+	case "INCR":
+		if len(parts) != 2 {
+			return protocol.Error("wrong number of arguments")
+		}
+		newValue, err := db.INCR(parts[1])
+		if err != nil {
+			return protocol.Error("value is not an integer")
+		}
+		return protocol.Integer(newValue)
+
+	case "DECR":
+		if len(parts) != 2 {
+			return protocol.Error("wrong number of arguments")
+		}
+		newValue, err := db.DECR(parts[1])
+		if err != nil {
+			return protocol.Error("value is not an integer")
+		}
+		return protocol.Integer(newValue)
+
+	case "INCRBY":
+		if len(parts) != 3 {
+			return protocol.Error("wrong number of arguments")
+		}
+
+		offset, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return protocol.Error("value is not an integer")
+		}
+
+		result, err := db.INCRBY(parts[1], offset)
+		if err != nil {
+			return protocol.Error(err.Error())
+		}
+
+		return protocol.Integer(result)
+
+	case "DECRBY":
+		if len(parts) != 3 {
+			return protocol.Error("wrong number of arguments")
+		}
+
+		offset, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return protocol.Error("value is not an integer")
+		}
+
+		result, err := db.DECRBY(parts[1], offset)
+		if err != nil {
+			return protocol.Error(err.Error())
+		}
+
+		return protocol.Integer(result)
+
+	case "SETEX":
+		if len(parts) != 4 {
+			return protocol.Error("wrong number of arguments")
+		}
+		seconds, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return protocol.Error("invalid expire time")
+		}
+
+		err = db.SETEX(parts[1], seconds, parts[3])
+		if err != nil {
+			return protocol.Error(err.Error())
+		}
+
+		return protocol.SimpleString("OK")
+
+	case "PERSIST":
+		if len(parts) != 2 {
+			return protocol.Error("wrong number of arguments")
+		}
+
+		ok := db.Persist(parts[1])
+
+		if ok {
+			return protocol.Integer(1)
+		}
+
+		return protocol.Integer(0)
+
+	case "RENAME":
+		if len(parts) != 3 {
+			return protocol.Error("wrong number of arguments")
+		}
+
+		if err := db.Rename(parts[1], parts[2]); err != nil {
+			return protocol.Error("no such key")
+		}
+
+		return protocol.SimpleString("OK")
+
+
 
 	default:
 		return protocol.Error("unknown command")

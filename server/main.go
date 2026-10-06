@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"time"
@@ -18,6 +20,10 @@ import (
 func main() {
 
 	godotenv.Load()
+
+	if addr := os.Getenv("PPROF_ADDR"); addr != "" {
+		go func() { log.Println("pprof:", http.ListenAndServe(addr, nil)) }()
+	}
 
 	kv := store.New()
 	go kv.StartExpiryWorker()

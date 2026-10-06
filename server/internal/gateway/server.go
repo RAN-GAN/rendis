@@ -12,13 +12,14 @@ type Config struct {
 
 func Start(cfg Config) {
 
-	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
 		handleConnection(w, r, cfg.BackendAddr)
 	})
 
 	fmt.Println("Gateway running on", cfg.ListenAddr)
 
-	err := http.ListenAndServe(cfg.ListenAddr, nil)
+	err := http.ListenAndServe(cfg.ListenAddr, mux)
 	if err != nil {
 		panic(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -55,59 +56,59 @@ func handleConnection(w http.ResponseWriter, r *http.Request, backend string) {
 
 	done := make(chan struct{})
 
+	// ws -> tcp: stream each frame through one reused buffer instead of
+	// ReadMessage, which allocates a fresh slice per frame.
 	go func() {
 		defer close(done)
+		buf := make([]byte, 4096)
 		for {
-			_, data, err := ws.ReadMessage()
+			_, r, err := ws.NextReader()
 			if err != nil {
 				return
 			}
-			fmt.Println(data)
-			if len(data) > 0 {
-				_, err = tcp.Write(data)
-				if err != nil {
-					return
+			for {
+				n, rerr := r.Read(buf)
+				if n > 0 {
+					if _, err := tcp.Write(buf[:n]); err != nil {
+						return
+					}
+				}
+				if rerr != nil {
+					break
 				}
 			}
 		}
 	}()
 
+	// tcp -> ws: frame one RESP reply per WebSocket message, building it
+	// in a reused buffer.
 	reader := bufio.NewReader(tcp)
+	var out []byte
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadSlice('\n')
 		if err != nil {
 			break
 		}
-		rawMsg := []byte(line)
-
-		lineStr := strings.TrimSuffix(line, "\r\n")
-		if len(lineStr) == 0 {
+		if len(line) <= 2 {
 			continue
 		}
+		out = append(out[:0], line...)
 
-		prefix := lineStr[0]
-		content := lineStr[1:]
-
-		if prefix == '$' {
-			length, err := strconv.Atoi(content)
+		if line[0] == '$' {
+			length, err := strconv.Atoi(string(line[1 : len(line)-2]))
 			if err != nil {
 				continue
 			}
 			if length != -1 {
-				buf := make([]byte, length)
-				if _, err := io.ReadFull(reader, buf); err != nil {
+				start := len(out)
+				out = slices.Grow(out, length+2)[:start+length+2]
+				if _, err := io.ReadFull(reader, out[start:]); err != nil {
 					break
 				}
-				crlf := make([]byte, 2)
-				io.ReadFull(reader, crlf)
-
-				rawMsg = append(rawMsg, buf...)
-				rawMsg = append(rawMsg, crlf...)
 			}
 		}
 
-		err = ws.WriteMessage(websocket.BinaryMessage, rawMsg)
-		if err != nil {
+		if err := ws.WriteMessage(websocket.BinaryMessage, out); err != nil {
 			break
 		}
 	}
