@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"syscall"
 	"strings"
 	"sync"
 	"time"
@@ -12,6 +13,7 @@ import (
 func runBenchmark(cfg Config) *Stats {
 	stats := NewStats()
 	var wg sync.WaitGroup
+	cpuStart := processCPU()
 
 	for i := 0; i < cfg.Concurrency; i++ {
 		wg.Add(1)
@@ -23,6 +25,7 @@ func runBenchmark(cfg Config) *Stats {
 	}
 
 	wg.Wait()
+	stats.CPUTime = processCPU() - cpuStart
 	return stats
 }
 
@@ -96,4 +99,13 @@ func main() {
 
 		PrintReport(os.Stdout, cfg, stats, actualDuration)
 	}
+}
+
+// processCPU returns user+system CPU time consumed by this process so far.
+func processCPU() time.Duration {
+	var ru syscall.Rusage
+	if err := syscall.Getrusage(syscall.RUSAGE_SELF, &ru); err != nil {
+		return 0
+	}
+	return time.Duration(ru.Utime.Nano() + ru.Stime.Nano())
 }

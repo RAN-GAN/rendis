@@ -13,6 +13,9 @@ type Stats struct {
 
 	Latencies []time.Duration
 	Ops       map[string]uint64
+
+	// Benchmark process CPU time used during the run (user+system).
+	CPUTime time.Duration
 }
 
 func NewStats() *Stats {

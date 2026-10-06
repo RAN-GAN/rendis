@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"runtime"
 	"sort"
 	"time"
 )
@@ -17,6 +18,10 @@ func PrintReport(w io.Writer, cfg Config, stats *Stats, actualDuration time.Dura
 	fmt.Fprintf(w, "Connections      : %d\n", cfg.Concurrency)
 	fmt.Fprintf(w, "Target Duration  : %v\n", cfg.Duration)
 	fmt.Fprintf(w, "Actual Duration  : %v\n", actualDuration)
+	if actualDuration > 0 && stats.CPUTime > 0 {
+		fmt.Fprintf(w, "Client CPU       : %.2f cores busy (GOMAXPROCS=%d)\n",
+			stats.CPUTime.Seconds()/actualDuration.Seconds(), runtime.GOMAXPROCS(0))
+	}
 	fmt.Fprintf(w, "=================================================\n")
 	fmt.Fprintf(w, "\n--- Operations ---\n")
 
