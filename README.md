@@ -628,64 +628,75 @@ Accept client connections
 
 # Benchmarks
 
-Rendis includes a custom, highly-concurrent WebSocket benchmark tool written in Go to test performance.
+Rendis ships a concurrent benchmark tool written in Go. It can target the WebSocket gateway (`ws://` / `wss://`) or the raw TCP backend (`tcp://`).
 
 ```bash
 cd benchmark
+
+# WebSocket gateway
 go run . -url "ws://localhost:8080" -key "test" -c 50 -duration 10s -mode mixed
+
+# Raw TCP backend (no gateway)
+go run . -url "tcp://127.0.0.1:1708" -c 50 -duration 10s -mode mixed
 ```
 
-## Rendis Benchmark (Local)
+The report also prints `Client CPU`, the cores the benchmark process itself kept busy, so you can tell whether the load generator is the limit.
 
-**Hardware**
-* **CPU:** 12th Gen Intel(R) Core(TM) i5-12450H
-* **OS:** Arch Linux
-* **Go Version:** 1.26
+## Local Benchmark
 
-**Benchmark**
-* **Workers:** 50
-* **Duration:** 10s
+**Setup:** Intel i5-12450H, Arch Linux, Go 1.26. Server and load generator on the same machine. 50 connections, mixed GET/SET/PING, 32-byte values, 0 failures in every run. Figures are medians over 5 interleaved 6s runs with server stdout redirected to a file. Run-to-run spread was about +/-20%, so treat them as ballpark numbers.
 
-**Operations**
-* **GET:** 48,211
-* **SET:** 48,092
-* **PING:** 47,713
+| Variant | Throughput (ops/s) | Avg latency | P99 |
+|---|---|---|---|
+| Raw TCP, no gateway (reference) | ~250K | ~193 us | ~0.83 ms |
+| WebSocket gateway, before tuning | 121K | 407 us | 1.52 ms |
+| + remove hot-path `Println`s | 150K (+24%) | 329 us | 1.30 ms |
+| + zero-allocation framing (current) | 143K (+18%) | 343 us | 1.29 ms |
 
-**Throughput**
-* 14,379 ops/sec
+With the server's stdout attached to a terminal (pty), the same fix is worth more, because every `Println` becomes a slow write:
 
-**Latency**
-* **Average:** 3.47 ms
-* **Median:** 2.10 ms
-* **P95:** 11.64 ms
-* **P99:** 17.85 ms
+| Variant | Throughput | Avg latency | P99 |
+|---|---|---|---|
+| Before | 61K | 813 us | 2.92 ms |
+| Current | 119K (1.95x) | 412 us | 1.81 ms |
+
+## Profiling the gateway
+
+The gateway was profiled with pprof under load. Findings:
+
+* **Debug prints on the hot path.** `fmt.Println` of every WebSocket payload and every parsed command took 16% of CPU. Removed.
+* **Per-frame allocation.** gorilla's `ReadMessage` allocates a new buffer per frame (`io.ReadAll` was 58% of allocated bytes), and reply framing made several allocations per reply. The gateway now streams frames through a reused buffer (`NextReader`) and builds replies in one reused buffer. Gateway allocation in the profile run dropped from 442 MB to 6.5 MB. This did not change throughput on its own, because the workload is syscall-bound.
+* **Not the cause.** There is one backend TCP dial per client connection (not per message) and one goroutine per direction per connection.
+* **What remains.** About 62% of CPU is syscalls. Each request costs the gateway four (WebSocket read, TCP write, TCP read, WebSocket write). The remaining gap to raw TCP is mostly that, plus the WebSocket client's own overhead in the benchmark.
+
+To profile your own deployment:
+
+```bash
+# local (binds to localhost only)
+PPROF_ADDR=127.0.0.1:6060 go run .
+go tool pprof -top "http://127.0.0.1:6060/debug/pprof/profile?seconds=10"
+
+# deployed (requires the gateway key; off unless PPROF_ENABLED=1)
+go tool pprof -top "https://<host>/debug/pprof/profile?seconds=10&key=<KEY>"
+```
 
 ## Cloud-to-Cloud Benchmark (Render Free Tier)
 
-This benchmark was run from a dedicated benchmark service deployed on Render, communicating over WebSockets with the Rendis server deployed in the same region.
+Run from a benchmark service on Render against the Rendis service over `wss://`, 50 workers, 10s, mixed. Run it with `GET /run?mode=mixed&c=50&duration=10s&url=wss://<host>&key=<KEY>` on the benchmark service.
 
-**Benchmark**
-* **Workers:** 50
-* **Duration:** 30s
+| Run | Throughput | Avg latency | Median | P99 |
+|---|---|---|---|---|
+| Typical result | 1.5K to 1.7K ops/s | 27 to 30 ms | 6 to 8 ms | 91 to 97 ms |
 
-**Operations**
-* **GET:** 16,199
-* **SET:** 16,282
-* **PING:** 16,224
+0 failures in every run. These numbers are **not a measure of the code**. A CPU profile of the deployed server under load showed:
 
-**Throughput**
-* 1,571.59 ops/sec (48,705 total operations)
-* **Failures:** 0 (0% error rate)
+* the benchmark client used about 0.15 cores, so it is not the limit;
+* a single connection sees about 5 ms round trip, which is the network floor between the services;
+* the server used about 1.04 s of CPU per 10 s (about 10% of one core), roughly 61 us of CPU per operation, with 78% of it in syscalls.
 
-**Latency**
-* **Average:** 30.84 ms
-* **Median:** 6.24 ms
-* **P95:** 90.34 ms
-* **P99:** 94.29 ms
-* **Max:** 305.87 ms
+The free instance is capped at a fraction of a CPU (documented as about 0.1 vCPU). At 61 us per operation, 0.1 core allows about 1.6K ops/s, which matches what was measured. The P95/P99 of roughly 90 ms against a median of about 6 ms is consistent with CPU throttling. The cloud ceiling is the CPU quota, so the speedups measured locally are not expected to show up cleanly here, and a clean cloud before/after needs the old and new builds deployed side by side.
 
-This validates the robustness of the `sync.RWMutex` thread safety and the stability of the TCP-to-WebSocket tunnel under sustained concurrent load.
-
+This still validates the `sync.RWMutex` thread safety and the stability of the TCP-to-WebSocket tunnel under sustained concurrent load.
 ---
 
 # Development Roadmap
